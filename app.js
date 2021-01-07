@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(cors());
 
 
-mongoose.connect('mongodb://localhost:27017/contactsDB',
+mongoose.connect('mongodb+srv://blog-admin:09785882767Htoo@cluster0.mzxmt.mongodb.net/contactDB?retryWrites=true&w=majority',
  {useNewUrlParser: true, useUnifiedTopology: true});
 const contactSchema=new mongoose.Schema({
     name:{type:String,required:true},
@@ -18,7 +18,9 @@ const contactSchema=new mongoose.Schema({
 });
 const Contact=mongoose.model('Contact',contactSchema);
 
-
+app.get('/',(req,res)=>{
+    res.send("Express api for react-contact")
+})
 app.get('/contacts',(req,res)=>{
     Contact.find({},(err,foundContacts)=>{
         if(!err){
@@ -31,12 +33,16 @@ app.get('/contacts',(req,res)=>{
     
 })
 app.post('/contacts/add',(req,res)=>{
-    const {name,email,phone,id}=req.body;
+    const {name,email,phone,_id}=req.body;
     const newContact=new Contact({
-        id,name,email,phone
+        _id,name,email,phone
     })
     newContact.save().then(()=>{
-        res.status(201).json({name,email,phone})
+        Contact.findOne({name,email,phone},(err,foundContact)=>{
+            (!err)?res.status(201).json(foundContact)
+            :res.status(500).end();
+        })
+        
     })
     .catch(err=>{
         res.status(500).end()
@@ -45,7 +51,7 @@ app.post('/contacts/add',(req,res)=>{
     
 })
 app.put('/contacts/edit/:id',(req,res)=>{
-    const {name,email,phone}=req.body;
+    const {name,email,phone,_id}=req.body;
     const id=req.params.id;
     const newContact={id,name,email,phone};
     Contact.findByIdAndUpdate({_id:id},{$set:newContact},(err,foundContact)=>{
@@ -57,8 +63,8 @@ app.put('/contacts/edit/:id',(req,res)=>{
 
 
 app.delete('/contacts/delete/:id',(req,res)=>{
-    const id=req.params.id;
-    Contact.findByIdAndDelete({_id:id},(err,deleteContact)=>{
+    const _id=req.params.id;
+    Contact.findByIdAndDelete({_id:_id},(err,deleteContact)=>{
         if(!err){
             console.log(deleteContact);
             res.status(200).end();
@@ -68,8 +74,8 @@ app.delete('/contacts/delete/:id',(req,res)=>{
     })
 })
 app.get('/contacts/:id',(req,res)=>{
-    const id=req.params.id;
-    Contact.findById({_id:id},(err,foundContact)=>{
+    const _id=req.params.id;
+    Contact.findById({_id:_id},(err,foundContact)=>{
         if(!err){
             console.log(foundContact);
             res.status(200).json(foundContact);
