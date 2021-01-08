@@ -33,9 +33,9 @@ app.get('/contacts',(req,res)=>{
     
 })
 app.post('/contacts/add',(req,res)=>{
-    const {name,email,phone,_id}=req.body;
+    const {name,email,phone}=req.body;
     const newContact=new Contact({
-        _id,name,email,phone
+        name,email,phone
     })
     newContact.save().then(()=>{
         Contact.findOne({name,email,phone},(err,foundContact)=>{
@@ -55,16 +55,17 @@ app.put('/contacts/edit/:id',(req,res)=>{
     const id=req.params.id;
     const newContact={id,name,email,phone};
     Contact.findByIdAndUpdate({_id:id},{$set:newContact},(err,foundContact)=>{
-        console.log(id,foundContact);
+        console.log("Put request\n"+foundContact);
+        (!err)?res.json(newContact):res.status(500).end();
     })
     
-    res.json(newContact);
+    
     })
 
 
 app.delete('/contacts/delete/:id',(req,res)=>{
     const _id=req.params.id;
-    Contact.findByIdAndDelete({_id:_id},(err,deleteContact)=>{
+    Contact.findByIdAndDelete({_id},(err,deleteContact)=>{
         if(!err){
             console.log(deleteContact);
             res.status(200).end();
@@ -79,6 +80,8 @@ app.get('/contacts/:id',(req,res)=>{
         if(!err){
             console.log(foundContact);
             res.status(200).json(foundContact);
+        }else{
+            res.status(500).end();
         }
     })
 })
