@@ -2,9 +2,10 @@ const express=require('express');
 const mongoose=require('mongoose');
 const bodyParser=require('body-parser');
 const cors=require('cors');
+const { urlencoded } = require('body-parser');
 
 const app=express();
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.json());
 app.use(cors());
 
 
@@ -51,14 +52,32 @@ app.post('/contacts/add',(req,res)=>{
     
 })
 app.put('/contacts/edit/:id',(req,res)=>{
-    const {name,email,phone,_id}=req.body;
-    const id=req.params.id;
-    const newContact={id,name,email,phone};
-    Contact.findByIdAndUpdate({_id:id},{$set:newContact},(err,foundContact)=>{
+    const name=req.body.name;
+    const email=req.body.email;
+    const phone=req.body.email;
+    const _id=req.params.id;
+    
+    console.log("Put req to",name);
+    Contact.findById({_id},(err,foundContact)=>{
         console.log("Put request\n"+foundContact);
-        (!err)?res.json(newContact):res.status(500).end();
+        if(!err){
+            foundContact.name=name;
+            foundContact.email=email;
+            foundContact.phone=phone;
+            console.log(foundContact,'edited');
+            //res.send("end put")
+            foundContact.save().then(()=>{
+                res.status(201).json(foundContact);
+            });
+        }else{
+            res.status(500).end();
+        }
     })
     
+    // console.log({...req.body});
+    // //console.log(name,email,phone,_id);
+
+    // res.status(200).json({msg:"put req success"});
     
     })
 
